@@ -7,7 +7,9 @@ from matplotlib import pyplot as plt
 #____________________ Exercice 3____________
 sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha.png')
-cap = cv2.VideoCapture('test_webcam.mp4')
+# Pour faire une capture vidéo de webcam
+cap = cv2.VideoCapture(0)
+
 while cap.isOpened():
     ret, frame = cap.read()
     # if frame is read correctly ret is True
