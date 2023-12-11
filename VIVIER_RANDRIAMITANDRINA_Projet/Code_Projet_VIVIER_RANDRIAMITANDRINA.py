@@ -70,10 +70,6 @@ while cap.isOpened():
         break
 cap.release()
 cv2.destroyAllWindows()
-
-def new():
-    # on exécute le même fichier menu_fichier.py
-    os.popen("Code_Projet_VIVIER_RANDRIAMITANDRINA.py")
     
 master = Tk()
 master.geometry("300x150")
