@@ -8,7 +8,7 @@ sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
-#_________________________________________________Gestion de l'interface graphique______________________________________________
+#_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
 master.geometry("640x480")  # Ajustez la taille selon vos besoins
@@ -18,8 +18,7 @@ menuBar = Menu(master)
 menuFichier = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label="Choix des filtres", menu=menuFichier)
 
-#_________________________________________________Gestion du menu des filtres______________________________________________
-#__________________________________________________Gestion du filtre lunnette_______________________________________________
+#__________________________________________________Gestion du filtre lunnette____________________________________________
 # Gestion du filtre lunnette avec une variable globale booléen
 bool_activate_filtre_lunette = False
 def filtre_lunette():
@@ -30,7 +29,7 @@ bool_activate_filtre_sepia = False
 def filtre_sepia():
     global bool_activate_filtre_sepia
     bool_activate_filtre_sepia = not bool_activate_filtre_sepia
-#_________________________________________________Gestion des sous menu_______________________________________________
+#_________________________________________________Gestion des filtre en sous menu_______________________________________
 # Création des sous-menus : 'Filtre lunette de soleil', 'Quitter'
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
 menuFichier.add_command(label="Activer/Desactiver le filtre sépia", command=filtre_sepia)
@@ -41,13 +40,13 @@ master.config(menu=menuBar)
 panel = Label(master)
 panel.pack(side="bottom", fill="both", expand="yes")
 
-#___________________________________________________Gestion de la vidéo webcam______________________________________________
+#___________________________________________________Gestion de la vidéo webcam____________________________________________
 # Fonction pour mettre à jour l'image
 def update_image():
     ret, frame = cap.read()
     if ret:
         p1 = frame.copy()
-        #____________________________________________Gestion du filtre lunettes______________________________________________
+        #____________________________________________Gestion du filtre lunettes___________________________________________
         if bool_activate_filtre_lunette:
             p1_gray = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
             face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
@@ -122,7 +121,7 @@ def update_image():
 update_image()
 # Démarrer la boucle principale Tkinter
 master.mainloop()
-#___________________________________________________Gestion de la fin du programme______________________________________________
+#___________________________________________________Gestion de la fin du programme____________________________________________
 # Arrêter la capture vidéo lorsque la fenêtre est fermée
 cap.release()
 cv2.destroyAllWindows()
