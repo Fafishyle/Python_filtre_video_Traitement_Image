@@ -1,6 +1,8 @@
 import cv2
 from tkinter import *
 from PIL import Image, ImageTk
+import numpy as np
+
 #___________________________________________________Gestion des fichiers média ______________________________________________
 sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha.png')
@@ -103,7 +105,11 @@ def update_image():
                                     p1[i+debut_y+y,j+debut_x+x] = sunglasses_resize[i,j]
         #____________________________________________Gestion du filtre sépia______________________________________________
         if bool_activate_filtre_sepia:
-            p1 = 255-p1
+            kernel = np.array(
+                [[0.272,    0.534,    0.131],
+                 [0.349,    0.686,    0.168],
+                 [0.393,    0.769,    0.189]])
+            p1 = cv2.transform(p1,kernel)
         # Convertir l'image OpenCV en image Pillow
         img = Image.fromarray(cv2.cvtColor(p1, cv2.COLOR_BGR2RGB))
         img = ImageTk.PhotoImage(image=img)
