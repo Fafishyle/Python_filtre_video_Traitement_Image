@@ -3,7 +3,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
 
-#___________________________________________________Gestion des fichiers média ______________________________________________
+#___________________________________________________Gestion des fichiers média __________________________________________
 sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha.png')
 # Initialiser la capture vidéo
