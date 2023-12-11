@@ -4,19 +4,23 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
+from tkinter import *
+import os
+
 #____________________ Exercice 3____________
+
 sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha.png')
 # Pour faire une capture vidéo de webcam
-cap = cv2.VideoCapture(0)
 
+cap = cv2.VideoCapture(0)
 while cap.isOpened():
     ret, frame = cap.read()
     # if frame is read correctly ret is True
     if not ret:
         print("Can't receive frame (stream end?). Exiting ...")
         break
-    
+        
     #pass from RGB to graylevel
     p1 = frame;
     p1_gray = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
@@ -52,18 +56,41 @@ while cap.isOpened():
                 # Positions de départ des lunettes
                 debut_x = center_x - int(width_sunglasses / 2) - offset_x
                 debut_y = center_y - int(height_sunglasses / 2) - offset_y
-                
-                #________Dans cette boucle, j'enlève le fond noir de l'image lunettes grâce au masque alpha_________
-                for i in range(0,sunglasses_resize.shape[0]) :
-                    for j in range(0, sunglasses_resize.shape[1]) :
-                       if alpha_sunglasses_resize[i,j,0] != 0 :
-                        p1[i+debut_y+y,j+debut_x+x] = sunglasses_resize[i,j]
+                def filtre_lunnette():
+                        #________Dans cette boucle, j'enlève le fond noir de l'image lunettes grâce au masque alpha_________
+                        for i in range(0,sunglasses_resize.shape[0]) :
+                            for j in range(0, sunglasses_resize.shape[1]) :
+                                if alpha_sunglasses_resize[i,j,0] != 0 :
+                                    p1[i+debut_y+y,j+debut_x+x] = sunglasses_resize[i,j]
     p = p1        
     #copy processed part to frame
     frame = p
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) == ord('q'):
         break
-
 cap.release()
 cv2.destroyAllWindows()
+
+def new():
+    # on exécute le même fichier menu_fichier.py
+    os.popen("Code_Projet_VIVIER_RANDRIAMITANDRINA.py")
+    
+master = Tk()
+master.geometry("300x150")
+# Création de la barre des menu
+menuBar = Menu(master) 
+ 
+# Création du menu principal 'Fichier'
+menuFichier  = Menu(menuBar, tearoff = 0) 
+menuBar.add_cascade(label="Choix des filtres",menu = menuFichier) 
+ 
+# Création des sous menus : 'Nouveau', 'Ouvrir', 'Quitter'
+#menuFichier.add_command(label = "Nouveau" , command = new) 
+menuFichier.add_command(label = "Filtre lunnette de soleil", command = filtre_lunnette) 
+menuFichier.add_command(label = "Quitter", command = quit) 
+ 
+# Configuration de la barre des menus
+master.config(menu = menuBar)
+master.mainloop()
+cv2.destroyAllWindows()
+
