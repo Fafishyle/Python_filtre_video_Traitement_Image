@@ -10,6 +10,9 @@ alpha_sunglasses = cv2.imread('alpha_sunglasses.png')
 # Image foulard
 scarf = cv2.imread('scarf.png')
 alpha_scarf = cv2.imread('alpha_scarf.png')
+# Image grain de beauté
+mole = cv2.imread('mole.png')
+alpha_mole = cv2.imread('alpha_mole.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
 # Récupérer les propriétés de la vidéo capturée
@@ -18,6 +21,7 @@ frame_height = int(cap.get(4))
 # Récupérer les fichiers de cascades de haar pour la detection
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')   
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
@@ -45,10 +49,17 @@ bool_activate_filtre_foulard = False
 def filtre_foulard():
     global bool_activate_filtre_foulard
     bool_activate_filtre_foulard = not bool_activate_filtre_foulard
+#__________________________________________________Gestion du filtre grain de beauté____________________________________________
+# Gestion du filtre foulard avec une variable globale booléen
+bool_activate_filtre_grain = False
+def filtre_grain():
+    global bool_activate_filtre_grain
+    bool_activate_filtre_grain = not bool_activate_filtre_grain
 #_________________________________________________Gestion des filtre en sous menu_______________________________________
 # Création des sous-menus : 'Filtre lunette de soleil', 'Quitter'
 menuFichier.add_command(label="Activer/Desactiver le filtre foulard", command=filtre_foulard)
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
+menuFichier.add_command(label="Activer/Desactiver le filtre grain de beauté", command=filtre_grain)
 menuFichier.add_command(label="Activer/Desactiver le filtre saturation", command=filtre_saturation)
 menuFichier.add_command(label="Quitter", command=master.quit)
 # Configuration de la barre des menus
@@ -136,6 +147,26 @@ def update_image():
                             for j in range(0, sunglasses_resize.shape[1]) :
                                 if alpha_sunglasses_resize[i,j,0] != 0 :
                                     p1[i+debut_y_sunglasses+y,j+debut_x_sunglasses+x] = sunglasses_resize[i,j]
+            #____________________________________________Gestion du filtre grain de beauté_______________________________________            
+            if bool_activate_filtre_grain:     
+                partie_inférieur_du_visage = int(y+(h*2/3))
+                faceROI_gray_mouth = p1_gray[partie_inférieur_du_visage:y+h, x:x+w]
+                mouths = mouth_cascade.detectMultiScale(faceROI_gray_mouth, 1.7, 4)
+                for (x2,y2,w2,h2) in mouths:
+                    scale_factor_mole = 0.2
+                    width_mole = int(w* scale_factor_mole)
+                    height_mole = int(h * scale_factor_mole)
+                    mole_resize = cv2.resize(mole, (width_mole, height_mole), 1, 1)
+                    alpha_mole_resize = cv2.resize(alpha_mole, (width_mole, height_mole), 1, 1)
+                    #faceROI_rgb[0:mole.shape[],0:mole.shape[0]] = mole
+                    offset_y_mole = int(height_mole * 2.9)
+                    debut_x_mole = int(x2+w2/2)
+                    debut_y_mole = y2 + offset_y_mole
+                    for i in range (0,mole_resize.shape[0]) :
+                        for j in range (0,mole_resize.shape[1]) :
+                            if alpha_mole_resize[i, j, 0] != 0 :
+                                p1[(y+i + debut_y_mole) % p1.shape[0], (x+j + debut_x_mole) % p1.shape[1]] = mole_resize[i, j]
+                    break
         #____________________________________________Gestion du filtre saturation______________________________________________
         if bool_activate_filtre_saturation:
             hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
