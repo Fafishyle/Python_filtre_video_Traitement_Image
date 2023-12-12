@@ -15,6 +15,9 @@ cap = cv2.VideoCapture(0)
 # Récupérer les propriétés de la vidéo capturée
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
+# Récupérer les fichiers de cascades de haar pour la detection
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
+eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
@@ -63,8 +66,6 @@ def update_image():
     if ret:
         p1 = frame.copy()
         p1_gray = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
-        eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
         # Detect faces
         faces = face_cascade.detectMultiScale(p1_gray, 1.1, 4)
         for (x,y,w,h) in faces :
@@ -86,6 +87,7 @@ def update_image():
                             p1[(i + debut_y_scarf) % p1.shape[0], (j + debut_x_scarf) % p1.shape[1]] = scarf_resize[i, j]
             #____________________________________________Gestion du filtre lunettes_______________________________________            
             if bool_activate_filtre_lunette:
+                # Réduire la zone de détection au visage
                 faceROI_gray = p1_gray[y:y+h,x:x+w]
                 eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.3, 5)
                 # Si on detecte 2 yeux
