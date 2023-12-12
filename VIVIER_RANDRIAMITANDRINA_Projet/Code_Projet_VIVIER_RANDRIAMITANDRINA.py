@@ -12,6 +12,9 @@ scarf = cv2.imread('scarf.png')
 alpha_scarf = cv2.imread('alpha_scarf.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
+# Récupérer les propriétés de la vidéo capturée
+frame_width = int(cap.get(3))
+frame_height = int(cap.get(4))
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
@@ -50,7 +53,9 @@ master.config(menu=menuBar)
 # Créer une étiquette pour afficher l'image
 panel = Label(master)
 panel.pack(side="bottom", fill="both", expand="yes")
-
+#___________________________________________________Gestion de l'enregistrement vidéo____________________________________________
+fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Vous pouvez également utiliser d'autres codecs comme MJPG, DIVX, XVID, etc.
+saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
 #___________________________________________________Gestion de la vidéo webcam____________________________________________
 # Fonction pour mettre à jour l'image
 def update_image():
@@ -137,6 +142,8 @@ def update_image():
             # Reconvertir l'image de HSV à BGR
             p1 = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
+        # Enregistrer la frame de la vidéo
+        saved_video.write(p1)
         # Convertir l'image OpenCV en image Pillow
         img = Image.fromarray(cv2.cvtColor(p1, cv2.COLOR_BGR2RGB))
         img = ImageTk.PhotoImage(image=img)
@@ -150,6 +157,7 @@ update_image()
 # Démarrer la boucle principale Tkinter
 master.mainloop()
 #___________________________________________________Gestion de la fin du programme____________________________________________
-# Arrêter la capture vidéo lorsque la fenêtre est fermée
+# Libérez les ressources
+saved_video.release()
 cap.release()
 cv2.destroyAllWindows()
