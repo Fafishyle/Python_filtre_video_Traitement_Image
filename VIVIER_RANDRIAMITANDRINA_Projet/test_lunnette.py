@@ -3,7 +3,7 @@ import numpy as np
 
 # Charger les images
 sunglasses = cv2.imread('sunglasses.png')
-alpha_sunglasses = cv2.imread('alpha.png')
+alpha_sunglasses = cv2.imread('alpha_sunglasses.png')
 
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)

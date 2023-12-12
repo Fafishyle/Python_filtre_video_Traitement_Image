@@ -5,7 +5,7 @@ import numpy as np
 
 #___________________________________________________Gestion des fichiers média __________________________________________
 sunglasses = cv2.imread('sunglasses.png')
-alpha_sunglasses = cv2.imread('alpha.png')
+alpha_sunglasses = cv2.imread('alpha_sunglasses.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
 #_________________________________________________Gestion de l'interface graphique_______________________________________
@@ -107,7 +107,7 @@ def update_image():
             kernel = np.array(
                 [[0.272,    0.534,    0.131],
                  [0.349,    0.686,    0.168],
-                 [0.393,    0.769,    0.189]])
+                 [0.393,    0.769,    1.189]])
             p1 = cv2.transform(p1,kernel)
         # Convertir l'image OpenCV en image Pillow
         img = Image.fromarray(cv2.cvtColor(p1, cv2.COLOR_BGR2RGB))
