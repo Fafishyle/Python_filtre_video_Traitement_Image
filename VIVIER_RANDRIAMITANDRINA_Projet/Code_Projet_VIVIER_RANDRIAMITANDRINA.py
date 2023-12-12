@@ -4,14 +4,18 @@ from PIL import Image, ImageTk
 import numpy as np
 
 #___________________________________________________Gestion des fichiers média __________________________________________
+# Image lunettes
 sunglasses = cv2.imread('sunglasses.png')
 alpha_sunglasses = cv2.imread('alpha_sunglasses.png')
+# Image foulard
+scarf = cv2.imread('scarf.png')
+alpha_scarf = cv2.imread('alpha_scarf.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
-master.geometry("640x480")  # Ajustez la taille selon vos besoins
+master.geometry("640x480")
 # Création de la barre des menus
 menuBar = Menu(master)
 # Création du menu principal 'Fichier'
@@ -24,15 +28,22 @@ bool_activate_filtre_lunette = False
 def filtre_lunette():
     global bool_activate_filtre_lunette
     bool_activate_filtre_lunette = not bool_activate_filtre_lunette
-#_________________________________________________Gestion du filtre Sépia_______________________________________________
-bool_activate_filtre_sepia = False
-def filtre_sepia():
-    global bool_activate_filtre_sepia
-    bool_activate_filtre_sepia = not bool_activate_filtre_sepia
+#_________________________________________________Gestion du filtre saturation_______________________________________________
+bool_activate_filtre_saturation = False
+def filtre_saturation():
+    global bool_activate_filtre_saturation
+    bool_activate_filtre_saturation = not bool_activate_filtre_saturation
+#__________________________________________________Gestion du filtre foulard____________________________________________
+# Gestion du filtre foulard avec une variable globale booléen
+bool_activate_filtre_foulard = False
+def filtre_foulard():
+    global bool_activate_filtre_foulard
+    bool_activate_filtre_foulard = not bool_activate_filtre_foulard
 #_________________________________________________Gestion des filtre en sous menu_______________________________________
 # Création des sous-menus : 'Filtre lunette de soleil', 'Quitter'
+menuFichier.add_command(label="Activer/Desactiver le filtre foulard", command=filtre_foulard)
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
-menuFichier.add_command(label="Activer/Desactiver le filtre sépia", command=filtre_sepia)
+menuFichier.add_command(label="Activer/Desactiver le filtre saturation", command=filtre_saturation)
 menuFichier.add_command(label="Quitter", command=master.quit)
 # Configuration de la barre des menus
 master.config(menu=menuBar)
@@ -46,14 +57,30 @@ def update_image():
     ret, frame = cap.read()
     if ret:
         p1 = frame.copy()
-        #____________________________________________Gestion du filtre lunettes___________________________________________
-        if bool_activate_filtre_lunette:
-            p1_gray = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
-            face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
-            eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
-            # Detect faces
-            faces = face_cascade.detectMultiScale(p1_gray, 1.1, 4)
-            for (x,y,w,h) in faces :
+        p1_gray = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
+        eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+        # Detect faces
+        faces = face_cascade.detectMultiScale(p1_gray, 1.1, 4)
+        for (x,y,w,h) in faces :
+            #____________________________________________Gestion du filtre foulards_______________________________________
+            if bool_activate_filtre_foulard:
+                scale_factor_scarf = 1.9
+                width_scarf = int(w)
+                height_scarf = int(h * scale_factor_scarf)
+                scarf_resize = cv2.resize(scarf, (width_scarf, height_scarf), 1, 1)
+                alpha_scarf_resize = cv2.resize(alpha_scarf, (width_scarf, height_scarf), 1, 1)
+                # Calcul des décalages vertical et horizontal
+                offset_y_scarf = int(height_scarf * 0.14)
+                #________Dans cette boucle, j'enlève le fond noir de l'image foulard grâce au masque alpha_________
+                debut_x_scarf = x
+                debut_y_scarf = y - offset_y_scarf
+                for i in range(0, scarf_resize.shape[0]) :
+                    for j in range(0, scarf_resize.shape[1]) :
+                        if alpha_scarf_resize[i, j, 0] != 0 :
+                            p1[(i + debut_y_scarf) % p1.shape[0], (j + debut_x_scarf) % p1.shape[1]] = scarf_resize[i, j]
+            #____________________________________________Gestion du filtre lunettes_______________________________________            
+            if bool_activate_filtre_lunette:
                 faceROI_gray = p1_gray[y:y+h,x:x+w]
                 eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.3, 5)
                 # Si on detecte 2 yeux
@@ -80,35 +107,36 @@ def update_image():
                     width_sunglasses = abs(position_x_de_l_oeil_B - position_x_de_l_oeil_A)
                     height_sunglasses = abs(position_y_de_l_oeil_B - position_y_de_l_oeil_A)
                     # Redimenssion des lunettes
-                    scale_factor = 1.5
-                    width_sunglasses = int(width_sunglasses * scale_factor)
-                    height_sunglasses = int(height_sunglasses * scale_factor)
+                    scale_factor_sunglasses = 1.5
+                    width_sunglasses = int(width_sunglasses * scale_factor_sunglasses)
+                    height_sunglasses = int(height_sunglasses * scale_factor_sunglasses)
                     if height_sunglasses != 0 and width_sunglasses != 0 :
                         # On redimensionne les lunettes
                         sunglasses_resize = cv2.resize(sunglasses, (width_sunglasses, height_sunglasses),1,1)
                         # On redimensionne aussi le masque alpha des lunettes
                         alpha_sunglasses_resize = cv2.resize(alpha_sunglasses, (width_sunglasses, height_sunglasses),1,1)
                         # Calcul du centre des yeux
-                        center_x = int((eyes[0, 0] + eyes[1, 0] + eyes[0, 2] + eyes[1, 2]) / 2)
-                        center_y = int((eyes[0, 1] + eyes[1, 1] + eyes[0, 3] + eyes[1, 3]) / 2)
+                        center_x_sunglasses = int((eyes[0, 0] + eyes[1, 0] + eyes[0, 2] + eyes[1, 2]) / 2)
+                        center_y_sunglasses = int((eyes[0, 1] + eyes[1, 1] + eyes[0, 3] + eyes[1, 3]) / 2)
                         # Calcul des décalages vertical et horizontal
-                        offset_x = int(width_sunglasses * 0.12)  # Ajustez la valeur selon votre besoin
-                        offset_y = int(height_sunglasses * 0.2)  # Ajustez la valeur selon votre besoin
+                        offset_x_sunglasses = int(width_sunglasses * 0.12)  
+                        offset_y_sunglasses = int(height_sunglasses * 0.2)
                         # Positions de départ des lunettes
-                        debut_x = center_x - int(width_sunglasses / 2) - offset_x
-                        debut_y = center_y - int(height_sunglasses / 2) - offset_y
+                        debut_x_sunglasses = center_x_sunglasses - int(width_sunglasses / 2) - offset_x_sunglasses
+                        debut_y_sunglasses = center_y_sunglasses - int(height_sunglasses / 2) - offset_y_sunglasses
                         #________Dans cette boucle, j'enlève le fond noir de l'image lunettes grâce au masque alpha_________
                         for i in range(0,sunglasses_resize.shape[0]) :
                             for j in range(0, sunglasses_resize.shape[1]) :
                                 if alpha_sunglasses_resize[i,j,0] != 0 :
-                                    p1[i+debut_y+y,j+debut_x+x] = sunglasses_resize[i,j]
-        #____________________________________________Gestion du filtre sépia______________________________________________
-        if bool_activate_filtre_sepia:
-            kernel = np.array(
-                [[0.272,    0.534,    0.131],
-                 [0.349,    0.686,    0.168],
-                 [0.393,    0.769,    1.189]])
-            p1 = cv2.transform(p1,kernel)
+                                    p1[i+debut_y_sunglasses+y,j+debut_x_sunglasses+x] = sunglasses_resize[i,j]
+        #____________________________________________Gestion du filtre saturation______________________________________________
+        if bool_activate_filtre_saturation:
+            hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
+            saturation_factor = 1.7
+            hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1] * saturation_factor, 0, 255)
+            # Reconvertir l'image de HSV à BGR
+            p1 = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+
         # Convertir l'image OpenCV en image Pillow
         img = Image.fromarray(cv2.cvtColor(p1, cv2.COLOR_BGR2RGB))
         img = ImageTk.PhotoImage(image=img)
