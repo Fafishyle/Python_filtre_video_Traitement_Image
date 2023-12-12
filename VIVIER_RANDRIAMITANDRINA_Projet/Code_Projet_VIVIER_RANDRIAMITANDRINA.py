@@ -102,7 +102,7 @@ def update_image():
                 faceROI_gray = p1_gray[y:y+h,x:x+w]
                 eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.3, 5)
                 # Si on detecte 2 yeux
-                if len(eyes) == 2:
+                if len(eyes) >= 2:
                     # Largeur et hauteur des lunettes
                     #width_sunglasses = abs( (eyes[1, 0] + eyes[1, 2]) - eyes[0, 0])
                     position_x_de_l_oeil_A = eyes[0,0] - int(eyes[0,2]/2)
@@ -160,7 +160,7 @@ def update_image():
                     alpha_mole_resize = cv2.resize(alpha_mole, (width_mole, height_mole), 1, 1)
                     #faceROI_rgb[0:mole.shape[],0:mole.shape[0]] = mole
                     offset_y_mole = int(height_mole * 2.9)
-                    debut_x_mole = int(x2+w2/2)
+                    debut_x_mole = int(x2+w2*3/4)
                     debut_y_mole = y2 + offset_y_mole
                     for i in range (0,mole_resize.shape[0]) :
                         for j in range (0,mole_resize.shape[1]) :
@@ -174,7 +174,6 @@ def update_image():
             hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1] * saturation_factor, 0, 255)
             # Reconvertir l'image de HSV à BGR
             p1 = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
-
         # Enregistrer la frame de la vidéo
         saved_video.write(p1)
         # Convertir l'image OpenCV en image Pillow

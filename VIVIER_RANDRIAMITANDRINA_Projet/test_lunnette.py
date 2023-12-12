@@ -35,7 +35,7 @@ while cap.isOpened():
         p1[y:y+h,x:x+w] = faceROI_rgb
         
         # Si on détecte 2 yeux
-        if len(eyes) == 2:
+        if len(eyes) >= 2:
             # Largeur et hauteur des lunettes
             #width_sunglasses = abs( (eyes[1, 0] + eyes[1, 2]) - eyes[0, 0])
             position_x_de_l_oeil_A = eyes[0,0] - int(eyes[0,2]/2)

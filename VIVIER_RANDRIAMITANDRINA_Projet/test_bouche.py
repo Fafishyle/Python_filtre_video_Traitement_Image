@@ -39,7 +39,7 @@ while cap.isOpened():
             faceROI_rgb = cv2.ellipse(faceROI_rgb, (x1 + int(w1*0.5), y1 + int(h1*0.5)), (int(w1*0.5),int(h1*0.5)), 0,0,360,(255, 0, 0), 4)
             #faceROI_rgb[0:mole.shape[],0:mole.shape[0]] = mole
             offset_y_mole = int(height_mole * 2.9)
-            debut_x_mole = int(x1+w1/2)
+            debut_x_mole = int(x1+w1*3/4)
             debut_y_mole = y1 + offset_y_mole
             for i in range (0,mole_resize.shape[0]) :
                 for j in range (0,mole_resize.shape[1]) :
