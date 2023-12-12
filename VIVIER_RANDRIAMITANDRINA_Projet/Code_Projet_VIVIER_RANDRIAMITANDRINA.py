@@ -98,11 +98,12 @@ def update_image():
                             p1[(i + debut_y_scarf) % p1.shape[0], (j + debut_x_scarf) % p1.shape[1]] = scarf_resize[i, j]
             #____________________________________________Gestion du filtre lunettes_______________________________________            
             if bool_activate_filtre_lunette:
+                partie_supérieur_du_visage = int(y+h*3/5)
                 # Réduire la zone de détection au visage
-                faceROI_gray = p1_gray[y:y+h,x:x+w]
-                eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.3, 5)
+                faceROI_gray = p1_gray[y:partie_supérieur_du_visage, x:x+w]
+                eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.02, 10)
                 # Si on detecte 2 yeux
-                if len(eyes) >= 2:
+                if len(eyes) == 2:
                     # Largeur et hauteur des lunettes
                     #width_sunglasses = abs( (eyes[1, 0] + eyes[1, 2]) - eyes[0, 0])
                     position_x_de_l_oeil_A = eyes[0,0] - int(eyes[0,2]/2)
