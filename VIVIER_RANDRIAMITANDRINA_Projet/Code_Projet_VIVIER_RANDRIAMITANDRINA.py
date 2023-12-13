@@ -238,12 +238,10 @@ def update_image():
                     animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
                     animation_frame_resize = cv2.resize(animation_frame, (p1.shape[1], p1.shape[0]),1,1)
                     # Incrustation de fond
-                    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gray_frame = cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY)
                     gray_capture_d_image_de_fond = cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)
                     mask = ((gray_frame -30 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 30))
                     # Incrustation de l'animation
-                    frame[mask] = animation_frame_resize[mask]
-                    mask = (capture_d_image_de_fond == p1)
                     p1[mask] = animation_frame_resize[mask]
                 # On récupère le plan suivant de l'animation d'animation
                 compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
