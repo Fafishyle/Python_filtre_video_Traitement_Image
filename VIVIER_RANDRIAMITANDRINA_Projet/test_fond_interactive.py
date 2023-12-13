@@ -1,7 +1,7 @@
 import cv2
 import os
 
-# Charger l'animation (par exemple, une séquence d'images)
+# Charger l'animation
 animation_folder = 'Dossier_d_animation'
 animation_files = sorted(os.listdir(animation_folder))
 
@@ -24,8 +24,6 @@ while cap.isOpened():
         animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
         # Vous pouvez ajuster la position, la taille, etc.
         animation_frame_resize = cv2.resize(animation_frame, (frame.shape[1], frame.shape[0]),1,1)
-        h, w, _ = animation_frame_resize.shape
-        #roi = frame[:h, :w]
         # Incrustation de fond
         for i in range (0,frame.shape[0]):
             for j in range (0,frame.shape[1]):

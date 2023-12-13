@@ -2,6 +2,8 @@ import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import numpy as np
+import os
+
 
 #___________________________________________________Gestion des fichiers média __________________________________________
 # Image lunettes
@@ -21,7 +23,10 @@ frame_height = int(cap.get(4))
 # Récupérer les fichiers de cascades de haar pour la detection
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
-mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')   
+mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
+# Charger le dossier d'animation
+animation_folder = 'Dossier_d_animation'
+animation_files = sorted(os.listdir(animation_folder))   
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
@@ -55,12 +60,19 @@ bool_activate_filtre_grain = False
 def filtre_grain():
     global bool_activate_filtre_grain
     bool_activate_filtre_grain = not bool_activate_filtre_grain
+#__________________________________________________Gestion du fond image animé plage____________________________________________
+# Gestion du filtre fond animée plage avec une variable globale booléen
+bool_activate_filtre_plage_animee = False
+def filtre_plage_animee():
+    global bool_activate_filtre_plage_animee
+    bool_activate_filtre_plage_animee = not bool_activate_filtre_plage_animee
 #_________________________________________________Gestion des filtre en sous menu_______________________________________
 # Création des sous-menus : 'Filtre lunette de soleil', 'Quitter'
 menuFichier.add_command(label="Activer/Desactiver le filtre foulard", command=filtre_foulard)
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
 menuFichier.add_command(label="Activer/Desactiver le filtre grain de beauté", command=filtre_grain)
 menuFichier.add_command(label="Activer/Desactiver le filtre saturation", command=filtre_saturation)
+menuFichier.add_command(label="Activer/Desactiver le filtre fond", command=filtre_plage_animee)
 menuFichier.add_command(label="Quitter", command=master.quit)
 # Configuration de la barre des menus
 master.config(menu=menuBar)
@@ -70,9 +82,17 @@ panel.pack(side="bottom", fill="both", expand="yes")
 #___________________________________________________Gestion de l'enregistrement vidéo____________________________________________
 fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Vous pouvez également utiliser d'autres codecs comme MJPG, DIVX, XVID, etc.
 saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
+#___________________________________________________Gestion de l'arrière plan____________________________________________
+compteur_image_animation = 0
+# Capture d'image de la première image (qui est le fond)
+if cap.isOpened():
+    ret, frame = cap.read()
+    capture_d_image_de_fond = frame
 #___________________________________________________Gestion de la vidéo webcam____________________________________________
 # Fonction pour mettre à jour l'image
 def update_image():
+    global compteur_image_animation
+    print(compteur_image_animation)
     ret, frame = cap.read()
     if ret:
         p1 = frame.copy()
@@ -168,6 +188,18 @@ def update_image():
                             if alpha_mole_resize[i, j, 0] != 0 :
                                 p1[(y+i + debut_y_mole) % p1.shape[0], (x+j + debut_x_mole) % p1.shape[1]] = mole_resize[i, j]
                     break
+            #____________________________________________Gestion du filtre arrière plan plage animée_______________________________________                    
+            if bool_activate_filtre_plage_animee:
+                if animation_files:
+                    animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
+                    animation_frame_resize = cv2.resize(animation_frame, (p1.shape[1], p1.shape[0]),1,1)
+                    # Incrustation de fond
+                    for i in range (0,p1.shape[0]):
+                        for j in range (0,p1.shape[1]):
+                            #print(capture_d_image_de_fond[i,j,0], frame[i,j,0])
+                            if (capture_d_image_de_fond[i,j,0] == p1[i,j,0]):
+                                p1[i,j]=animation_frame_resize[i,j]
+                    compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
         #____________________________________________Gestion du filtre saturation______________________________________________
         if bool_activate_filtre_saturation:
             hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
