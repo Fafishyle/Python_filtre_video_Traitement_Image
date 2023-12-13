@@ -21,9 +21,9 @@ while cap.isOpened():
     # Incruster l'image de la cabane
     # Vous pouvez ajuster la position, la taille, etc.
     fond_frame_resize = cv2.resize(fondimg, (frame.shape[1], frame.shape[0]))
-
-    # Créer un masque basé sur la différence des valeurs des canaux de couleur
-    mask = ((frame[:, :, 1] - 20 <= capture_d_image_de_fond[:, :, 1]) & (capture_d_image_de_fond[:, :, 1] <= frame[:, :, 1] + 20))
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray_capture_d_image_de_fond = cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)
+    mask = ((gray_frame -30 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 30))
 
     # Appliquer le masque pour l'incrustation de l'image de la cabane sur le fond
     frame[mask] = fond_frame_resize[mask]

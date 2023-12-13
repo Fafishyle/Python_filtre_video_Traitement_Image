@@ -39,9 +39,6 @@ menuBar = Menu(master)
 # Création du menu principal 'Fichier'
 menuFichier = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label="Choix des filtres", menu=menuFichier)
-label = Label(master, text="", font=("Helvetica", 12))
-# Placer le label en bas de la fenêtre
-label.pack(side="bottom")
 #__________________________________________________Gestion du filtre lunnette____________________________________________
 # Gestion du filtre lunnette avec une variable globale booléen
 bool_activate_filtre_lunette = False
@@ -117,17 +114,6 @@ master.config(menu=menuBar)
 # Créer une étiquette pour afficher l'image
 panel = Label(master)
 panel.pack(side="bottom", fill="both", expand="yes")
-def is_in_range(value, lower_limit, upper_limit):
-    return lower_limit <= value <= upper_limit
-#_________________________________________________Gestion du texte sur la fenêtre_______________________________________
-# Fonction pour mettre à jour le texte
-def update_text():
-    # Mettre à jour le texte avec vos informations
-    text = "Votre texte ici"
-    # Mettre à jour le texte du label
-    label.config(text=text)
-    # Planifier la prochaine mise à jour après un certain délai (en millisecondes)
-    master.after(1000, update_text)
 #___________________________________________________Gestion de l'enregistrement vidéo____________________________________________
 fourcc = cv2.VideoWriter_fourcc(*'XVID') 
 saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
@@ -135,8 +121,12 @@ saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_widt
 def incrustation_de_fond_statique(image, frame):
     fond_frame_resize = cv2.resize(image, (frame.shape[1], frame.shape[0]),1,1)
         # Incrustation de fond
-    mask = (capture_d_image_de_fond == frame)
-    frame[mask] = fond_frame_resize[mask]
+    fond_frame_resize = cv2.resize(capture_d_image_de_fond, (frame.shape[1], frame.shape[0]))
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray_capture_d_image_de_fond = cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)
+    # Appliquer le masque pour l'incrustation de l'image de la cabane sur le fond
+    mask = ((gray_frame -30 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 30))
+    frame[mask] = image[mask]
     return frame
 #___________________________________________________Gestion de l'arrière plan____________________________________________
 compteur_image_animation = 0
@@ -248,6 +238,11 @@ def update_image():
                     animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
                     animation_frame_resize = cv2.resize(animation_frame, (p1.shape[1], p1.shape[0]),1,1)
                     # Incrustation de fond
+                    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gray_capture_d_image_de_fond = cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)
+                    mask = ((gray_frame -30 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 30))
+                    # Incrustation de l'animation
+                    frame[mask] = animation_frame_resize[mask]
                     mask = (capture_d_image_de_fond == p1)
                     p1[mask] = animation_frame_resize[mask]
                 # On récupère le plan suivant de l'animation d'animation
@@ -277,7 +272,6 @@ def update_image():
     master.after(10, update_image)
 # Démarrer la mise à jour de l'image
 update_image()
-update_text()
 # Démarrer la boucle principale Tkinter
 master.mainloop()
 #___________________________________________________Gestion de la fin du programme____________________________________________

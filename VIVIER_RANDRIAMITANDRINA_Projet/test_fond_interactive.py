@@ -25,9 +25,10 @@ while cap.isOpened():
         # Vous pouvez ajuster la position, la taille, etc.
         animation_frame_resize = cv2.resize(animation_frame, (frame.shape[1], frame.shape[0]))
 
+        #Mettre en gris la frame et l'image de fond
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_capture_d_image_de_fond = cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)
-        mask = ((gray_frame - 20 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 20))
+        mask = ((gray_frame -30 <= gray_capture_d_image_de_fond) & (gray_capture_d_image_de_fond <= gray_frame + 30))
 
         # Incrustation de l'animation
         #mask = ((frame[:, :, 2] - 20 <= capture_d_image_de_fond[:, :, 2]) & (capture_d_image_de_fond[:, :, 2] <= frame[:, :, 2] + 20))
