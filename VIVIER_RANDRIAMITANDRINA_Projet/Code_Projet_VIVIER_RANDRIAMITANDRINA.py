@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import numpy as np
 import os
 
-
 #___________________________________________________Gestion des fichiers média __________________________________________
 # Image lunettes
 sunglasses = cv2.imread('sunglasses.png')
@@ -28,7 +27,7 @@ frame_height = int(cap.get(4))
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
 mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
-# Charger le dossier d'animation
+# Charger le dossier d'animation pour le fond animé
 animation_folder = 'Dossier_d_animation'
 animation_files = sorted(os.listdir(animation_folder))   
 #_________________________________________________Gestion de l'interface graphique_______________________________________
@@ -41,10 +40,8 @@ menuBar = Menu(master)
 menuFichier = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label="Choix des filtres", menu=menuFichier)
 label = Label(master, text="", font=("Helvetica", 12))
-
 # Placer le label en bas de la fenêtre
 label.pack(side="bottom")
-
 #__________________________________________________Gestion du filtre lunnette____________________________________________
 # Gestion du filtre lunnette avec une variable globale booléen
 bool_activate_filtre_lunette = False
@@ -120,6 +117,8 @@ master.config(menu=menuBar)
 # Créer une étiquette pour afficher l'image
 panel = Label(master)
 panel.pack(side="bottom", fill="both", expand="yes")
+def is_in_range(value, lower_limit, upper_limit):
+    return lower_limit <= value <= upper_limit
 #_________________________________________________Gestion du texte sur la fenêtre_______________________________________
 # Fonction pour mettre à jour le texte
 def update_text():
@@ -130,25 +129,21 @@ def update_text():
     # Planifier la prochaine mise à jour après un certain délai (en millisecondes)
     master.after(1000, update_text)
 #___________________________________________________Gestion de l'enregistrement vidéo____________________________________________
-fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Vous pouvez également utiliser d'autres codecs comme MJPG, DIVX, XVID, etc.
+fourcc = cv2.VideoWriter_fourcc(*'XVID') 
 saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
-#___________________________________________________Gestion de l'arrière plan____________________________________________
-compteur_image_animation = 0
-# Capture d'image de la première image (qui est le fond)
-if cap.isOpened():
-    ret, frame = cap.read()
-    capture_d_image_de_fond = frame
-
-#___________________________________________________Fonction pour modifier l'arrière plan statique____________________________________________
+#___________________________________________________Fonction pour modifier l'arrière plan statique de la webcam____________________________________________
 def miseAJourFond(image, frame):
     fond_frame_resize = cv2.resize(image, (frame.shape[1], frame.shape[0]),1,1)
         # Incrustation de fond
-    for i in range (0,frame.shape[0]):
-        for j in range (0,frame.shape[1]):
-            if (capture_d_image_de_fond[i,j,0] == frame[i,j,0]):
-                    #cv2.addWeighted(roi, 1, animation_frame_resize, 0.9, 0, roi)
-                    frame[i,j]=fond_frame_resize[i,j]
+    mask = (capture_d_image_de_fond == frame)
+    frame[mask] = fond_frame_resize[mask]
     return frame
+#___________________________________________________Gestion de l'arrière plan____________________________________________
+compteur_image_animation = 0
+# Capture d'image de la première image (qui sera l'arrière plan)
+if cap.isOpened():
+    ret, frame = cap.read()
+    capture_d_image_de_fond = frame
 #___________________________________________________Gestion de la vidéo webcam____________________________________________
 # Fonction pour mettre à jour l'image
 def update_image():
@@ -167,7 +162,7 @@ def update_image():
                 height_scarf = int(h * scale_factor_scarf)
                 scarf_resize = cv2.resize(scarf, (width_scarf, height_scarf), 1, 1)
                 alpha_scarf_resize = cv2.resize(alpha_scarf, (width_scarf, height_scarf), 1, 1)
-                # Calcul des décalages vertical et horizontal
+                # Calcul des décalages vertical
                 offset_y_scarf = int(height_scarf * 0.14)
                 #________Dans cette boucle, j'enlève le fond noir de l'image foulard grâce au masque alpha_________
                 debut_x_scarf = x
@@ -184,8 +179,6 @@ def update_image():
                 eyes = eyes_cascade.detectMultiScale(faceROI_gray, 1.02, 10)
                 # Si on detecte 2 yeux
                 if len(eyes) == 2:
-                    # Largeur et hauteur des lunettes
-                    #width_sunglasses = abs( (eyes[1, 0] + eyes[1, 2]) - eyes[0, 0])
                     position_x_de_l_oeil_A = eyes[0,0] - int(eyes[0,2]/2)
                     position_x_de_l_oeil_B = eyes[1,0] - int(eyes[1,2]/2)
                     position_x_minimum = min(position_x_de_l_oeil_A,position_x_de_l_oeil_B)
@@ -239,7 +232,6 @@ def update_image():
                     height_mole = int(h * scale_factor_mole)
                     mole_resize = cv2.resize(mole, (width_mole, height_mole), 1, 1)
                     alpha_mole_resize = cv2.resize(alpha_mole, (width_mole, height_mole), 1, 1)
-                    #faceROI_rgb[0:mole.shape[],0:mole.shape[0]] = mole
                     offset_y_mole = int(height_mole * 2.9)
                     debut_x_mole = int(x2+w2*3/4)
                     debut_y_mole = y2 + offset_y_mole
@@ -254,12 +246,9 @@ def update_image():
                     animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
                     animation_frame_resize = cv2.resize(animation_frame, (p1.shape[1], p1.shape[0]),1,1)
                     # Incrustation de fond
-                    for i in range (0,p1.shape[0]):
-                        for j in range (0,p1.shape[1]):
-                            #print(capture_d_image_de_fond[i,j,0], frame[i,j,0])
-                            if (capture_d_image_de_fond[i,j,0] == p1[i,j,0]):
-                                p1[i,j]=animation_frame_resize[i,j]
-                    compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
+                    mask = (capture_d_image_de_fond == p1)
+                    p1[mask] = animation_frame_resize[mask]
+                compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
             #____________________________________________Gestion du filtre arrière plan océan_______________________________________                    
             if bool_activate_filtre_ocean:
                 p1 = miseAJourFond(ocean, p1)

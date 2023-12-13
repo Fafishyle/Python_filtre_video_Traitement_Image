@@ -18,11 +18,16 @@ while cap.isOpened():
     # Vous pouvez ajuster la position, la taille, etc.
     fond_frame_resize = cv2.resize(fond, (frame.shape[1], frame.shape[0]),1,1)
         # Incrustation de fond
+
+    mask = (capture_d_image_de_fond == frame)
+    frame[mask] = fond_frame_resize[mask]
+    """
     for i in range (0,frame.shape[0]):
         for j in range (0,frame.shape[1]):
             if (capture_d_image_de_fond[i,j,0] == frame[i,j,0]):
                     #cv2.addWeighted(roi, 1, animation_frame_resize, 0.9, 0, roi)
                     frame[i,j]=fond_frame_resize[i,j]
+    """
     # Afficher le résultat
     cv2.imshow('Webcam avec Animation', frame)
     if cv2.waitKey(1) == ord('q'):
