@@ -1,3 +1,8 @@
+"""
+M1 informatique - Traitement d'image
+RANDRIAMITANDRINA Finaritra
+VIVIER Maude
+"""
 import cv2
 from tkinter import *
 from PIL import Image, ImageTk
