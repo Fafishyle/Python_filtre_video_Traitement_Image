@@ -132,7 +132,7 @@ def update_text():
 fourcc = cv2.VideoWriter_fourcc(*'XVID') 
 saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
 #___________________________________________________Fonction pour modifier l'arrière plan statique de la webcam____________________________________________
-def miseAJourFond(image, frame):
+def incrustation_de_fond_statique(image, frame):
     fond_frame_resize = cv2.resize(image, (frame.shape[1], frame.shape[0]),1,1)
         # Incrustation de fond
     mask = (capture_d_image_de_fond == frame)
@@ -235,26 +235,29 @@ def update_image():
                     offset_y_mole = int(height_mole * 2.9)
                     debut_x_mole = int(x2+w2*3/4)
                     debut_y_mole = y2 + offset_y_mole
+                    # On incruste l'image du grain de beauté grâce à son alpha
                     for i in range (0,mole_resize.shape[0]) :
                         for j in range (0,mole_resize.shape[1]) :
                             if alpha_mole_resize[i, j, 0] != 0 :
                                 p1[(y+i + debut_y_mole) % p1.shape[0], (x+j + debut_x_mole) % p1.shape[1]] = mole_resize[i, j]
-                    break
+                    break #car sur un seul visage, il y a une seule bouche
             #____________________________________________Gestion du filtre arrière plan plage animée_______________________________________                    
             if bool_activate_filtre_plage_animee:
                 if animation_files:
+                    # On récupère l'image d'arrière plan d'animation
                     animation_frame = cv2.imread(os.path.join(animation_folder, animation_files[compteur_image_animation]))
                     animation_frame_resize = cv2.resize(animation_frame, (p1.shape[1], p1.shape[0]),1,1)
                     # Incrustation de fond
                     mask = (capture_d_image_de_fond == p1)
                     p1[mask] = animation_frame_resize[mask]
+                # On récupère le plan suivant de l'animation d'animation
                 compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
             #____________________________________________Gestion du filtre arrière plan océan_______________________________________                    
             if bool_activate_filtre_ocean:
-                p1 = miseAJourFond(ocean, p1)
+                p1 = incrustation_de_fond_statique(ocean, p1)
             #____________________________________________Gestion du filtre arrière plan cabane_______________________________________                    
             if bool_activate_filtre_cabane:
-                p1 = miseAJourFond(cabane, p1)
+                p1 = incrustation_de_fond_statique(cabane, p1)
         #____________________________________________Gestion du filtre saturation______________________________________________
         if bool_activate_filtre_saturation:
             hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
@@ -270,7 +273,7 @@ def update_image():
         # Mettre à jour l'image dans l'étiquette
         panel.configure(image=img)
         panel.image = img
-    # Planifier la prochaine mise à jour
+    # Planifier la prochaine mise à jour de l'image
     master.after(10, update_image)
 # Démarrer la mise à jour de l'image
 update_image()
