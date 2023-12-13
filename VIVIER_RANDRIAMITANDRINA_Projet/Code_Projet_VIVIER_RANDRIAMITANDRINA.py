@@ -15,6 +15,10 @@ alpha_scarf = cv2.imread('alpha_scarf.png')
 # Image grain de beauté
 mole = cv2.imread('mole.png')
 alpha_mole = cv2.imread('alpha_mole.png')
+# Image fond ocean
+ocean = cv2.imread('ocean.png')
+# Image fond cabane
+cabane = cv2.imread('cabane.png')
 # Initialiser la capture vidéo
 cap = cv2.VideoCapture(0)
 # Récupérer les propriétés de la vidéo capturée
@@ -36,6 +40,10 @@ menuBar = Menu(master)
 # Création du menu principal 'Fichier'
 menuFichier = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label="Choix des filtres", menu=menuFichier)
+label = Label(master, text="", font=("Helvetica", 12))
+
+# Placer le label en bas de la fenêtre
+label.pack(side="bottom")
 
 #__________________________________________________Gestion du filtre lunnette____________________________________________
 # Gestion du filtre lunnette avec une variable globale booléen
@@ -65,20 +73,62 @@ def filtre_grain():
 bool_activate_filtre_plage_animee = False
 def filtre_plage_animee():
     global bool_activate_filtre_plage_animee
+    global bool_activate_filtre_cabane
+    global bool_activate_filtre_ocean
+    bool_activate_filtre_cabane = False
+    bool_activate_filtre_ocean = False
     bool_activate_filtre_plage_animee = not bool_activate_filtre_plage_animee
+#__________________________________________________Gestion du fond image ocean____________________________________________
+# Gestion du filtre fond ocean avec une variable globale booléen
+bool_activate_filtre_ocean = False
+def filtre_ocean():
+    global bool_activate_filtre_ocean
+    global bool_activate_filtre_cabane
+    global bool_activate_filtre_plage_animee
+    bool_activate_filtre_plage_animee = False   
+    bool_activate_filtre_cabane = False
+    bool_activate_filtre_ocean = not bool_activate_filtre_ocean
+#__________________________________________________Gestion du fond image cabane____________________________________________
+# Gestion du filtre fond cabane avec une variable globale booléen
+bool_activate_filtre_cabane = False
+def filtre_cabane():
+    global bool_activate_filtre_cabane
+    global bool_activate_filtre_ocean
+    global bool_activate_filtre_plage_animee
+    bool_activate_filtre_plage_animee = False 
+    bool_activate_filtre_ocean = False
+    bool_activate_filtre_cabane = not bool_activate_filtre_cabane
+#_________________________________________________Gestion du sous menu de fond_______________________________________
+def filtre_fond_menu ():
+    menuFond = Menu(menuFichier)
+    menuFond.add_command(label="Activer/Desactiver fond ocean", command=filtre_ocean)
+    menuFond.add_command(label="Activer/Desactiver fond cabane", command=filtre_cabane)
+    menuFond.add_command(label="Activer/Desactiver fond animée plage", command=filtre_plage_animee)
+    return menuFond
+
 #_________________________________________________Gestion des filtre en sous menu_______________________________________
 # Création des sous-menus : 'Filtre lunette de soleil', 'Quitter'
 menuFichier.add_command(label="Activer/Desactiver le filtre foulard", command=filtre_foulard)
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
 menuFichier.add_command(label="Activer/Desactiver le filtre grain de beauté", command=filtre_grain)
 menuFichier.add_command(label="Activer/Desactiver le filtre saturation", command=filtre_saturation)
-menuFichier.add_command(label="Activer/Desactiver le filtre fond", command=filtre_plage_animee)
+menuFond = filtre_fond_menu()
+menuFichier.add_cascade(label = "Filtre fond", menu = menuFond)
 menuFichier.add_command(label="Quitter", command=master.quit)
 # Configuration de la barre des menus
 master.config(menu=menuBar)
 # Créer une étiquette pour afficher l'image
 panel = Label(master)
 panel.pack(side="bottom", fill="both", expand="yes")
+#_________________________________________________Gestion du texte sur la fenêtre_______________________________________
+# Fonction pour mettre à jour le texte
+def update_text():
+    # Mettre à jour le texte avec vos informations
+    text = "Votre texte ici"
+    # Mettre à jour le texte du label
+    label.config(text=text)
+    # Planifier la prochaine mise à jour après un certain délai (en millisecondes)
+    master.after(1000, update_text)
 #___________________________________________________Gestion de l'enregistrement vidéo____________________________________________
 fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Vous pouvez également utiliser d'autres codecs comme MJPG, DIVX, XVID, etc.
 saved_video = cv2.VideoWriter('video_enregistré.avi', fourcc, 20.0, (frame_width, frame_height))
@@ -88,11 +138,21 @@ compteur_image_animation = 0
 if cap.isOpened():
     ret, frame = cap.read()
     capture_d_image_de_fond = frame
+
+#___________________________________________________Fonction pour modifier l'arrière plan statique____________________________________________
+def miseAJourFond(image, frame):
+    fond_frame_resize = cv2.resize(image, (frame.shape[1], frame.shape[0]),1,1)
+        # Incrustation de fond
+    for i in range (0,frame.shape[0]):
+        for j in range (0,frame.shape[1]):
+            if (capture_d_image_de_fond[i,j,0] == frame[i,j,0]):
+                    #cv2.addWeighted(roi, 1, animation_frame_resize, 0.9, 0, roi)
+                    frame[i,j]=fond_frame_resize[i,j]
+    return frame
 #___________________________________________________Gestion de la vidéo webcam____________________________________________
 # Fonction pour mettre à jour l'image
 def update_image():
     global compteur_image_animation
-    print(compteur_image_animation)
     ret, frame = cap.read()
     if ret:
         p1 = frame.copy()
@@ -200,6 +260,12 @@ def update_image():
                             if (capture_d_image_de_fond[i,j,0] == p1[i,j,0]):
                                 p1[i,j]=animation_frame_resize[i,j]
                     compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
+            #____________________________________________Gestion du filtre arrière plan océan_______________________________________                    
+            if bool_activate_filtre_ocean:
+                p1 = miseAJourFond(ocean, p1)
+            #____________________________________________Gestion du filtre arrière plan cabane_______________________________________                    
+            if bool_activate_filtre_cabane:
+                p1 = miseAJourFond(cabane, p1)
         #____________________________________________Gestion du filtre saturation______________________________________________
         if bool_activate_filtre_saturation:
             hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
@@ -219,6 +285,7 @@ def update_image():
     master.after(10, update_image)
 # Démarrer la mise à jour de l'image
 update_image()
+update_text()
 # Démarrer la boucle principale Tkinter
 master.mainloop()
 #___________________________________________________Gestion de la fin du programme____________________________________________
