@@ -86,9 +86,7 @@ def filtre_plage_animee():
 # Gestion du filtre fond d'oiseaux animées avec une variable globale booléen
 bool_activate_filtre_oiseau_animee = False
 def filtre_oiseau():
-    global bool_activate_filtre_oiseau_animee
-    global bool_activate_filtre_plage_animee
-    bool_activate_filtre_plage_animee = False   
+    global bool_activate_filtre_oiseau_animee 
     bool_activate_filtre_oiseau_animee = not bool_activate_filtre_oiseau_animee
 #__________________________________________________Gestion du fond image ocean____________________________________________
 # Gestion du filtre fond ocean avec une variable globale booléen
@@ -114,7 +112,6 @@ def filtre_cabane():
 # Définition du sous-menu des fonds
 def filtre_fond_menu ():
     menuFond = Menu(menuFichier)
-    menuFond.add_command(label="Activer/Desactiver animation oiseau", command=filtre_oiseau)
     menuFond.add_command(label="Activer/Desactiver fond ocean", command=filtre_ocean)
     menuFond.add_command(label="Activer/Desactiver fond cabane", command=filtre_cabane)
     menuFond.add_command(label="Activer/Desactiver fond animée plage", command=filtre_plage_animee)
@@ -126,6 +123,7 @@ menuFichier.add_command(label="Activer/Desactiver le filtre foulard", command=fi
 menuFichier.add_command(label="Activer/Desactiver le filtre lunette de soleil", command=filtre_lunette)
 menuFichier.add_command(label="Activer/Desactiver le filtre grain de beauté", command=filtre_grain)
 menuFichier.add_command(label="Activer/Desactiver le filtre saturation", command=filtre_saturation)
+menuFichier.add_command(label="Activer/Desactiver animation oiseau", command=filtre_oiseau)
 menuFond = filtre_fond_menu()
 menuFichier.add_cascade(label = "Filtre fond", menu = menuFond)
 menuFichier.add_command(label="Quitter", command=master.quit)
