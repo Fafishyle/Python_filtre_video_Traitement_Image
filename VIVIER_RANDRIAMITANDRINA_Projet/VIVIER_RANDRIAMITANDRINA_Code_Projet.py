@@ -34,7 +34,12 @@ eyes_cascade = cv2.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
 mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
 # Charger le dossier d'animation pour le fond animé
 animation_folder = 'Dossier_d_animation'
-animation_files = sorted(os.listdir(animation_folder))   
+animation_files = sorted(os.listdir(animation_folder))
+# Charger les dossiers d'image d'oiseaux
+animation_folder_bird = 'Dossier_d_animation_oiseau'
+animation_files_bird = sorted(os.listdir(animation_folder_bird))
+alpha_animation_folder = 'Dossier_d_animation_oiseau_alpha'
+alpha_animation_files = sorted(os.listdir(alpha_animation_folder))
 #_________________________________________________Gestion de l'interface graphique_______________________________________
 # Interface graphique Tkinter
 master = Tk()
@@ -77,6 +82,14 @@ def filtre_plage_animee():
     bool_activate_filtre_cabane = False
     bool_activate_filtre_ocean = False
     bool_activate_filtre_plage_animee = not bool_activate_filtre_plage_animee
+#__________________________________________________Gestion du fond animation oiseau____________________________________________
+# Gestion du filtre fond d'oiseaux animées avec une variable globale booléen
+bool_activate_filtre_oiseau_animee = False
+def filtre_oiseau():
+    global bool_activate_filtre_oiseau_animee
+    global bool_activate_filtre_plage_animee
+    bool_activate_filtre_plage_animee = False   
+    bool_activate_filtre_oiseau_animee = not bool_activate_filtre_oiseau_animee
 #__________________________________________________Gestion du fond image ocean____________________________________________
 # Gestion du filtre fond ocean avec une variable globale booléen
 bool_activate_filtre_ocean = False
@@ -101,6 +114,7 @@ def filtre_cabane():
 # Définition du sous-menu des fonds
 def filtre_fond_menu ():
     menuFond = Menu(menuFichier)
+    menuFond.add_command(label="Activer/Desactiver animation oiseau", command=filtre_oiseau)
     menuFond.add_command(label="Activer/Desactiver fond ocean", command=filtre_ocean)
     menuFond.add_command(label="Activer/Desactiver fond cabane", command=filtre_cabane)
     menuFond.add_command(label="Activer/Desactiver fond animée plage", command=filtre_plage_animee)
@@ -155,7 +169,9 @@ def update_image():
             bool_activate_filtre_lunette or 
             bool_activate_filtre_grain or 
             bool_activate_filtre_plage_animee or 
-            bool_activate_filtre_ocean or bool_activate_filtre_cabane) :
+            bool_activate_filtre_ocean or 
+            bool_activate_filtre_cabane or
+            bool_activate_filtre_oiseau_animee) :
             for (x,y,w,h) in faces :
                 #____________________________________________Gestion du filtre foulards_______________________________________
                 if bool_activate_filtre_foulard:
@@ -256,13 +272,27 @@ def update_image():
                         # Incrustation de l'animation
                         p1[mask] = animation_frame_resize[mask]
                     # On récupère le plan suivant de l'animation
-                    compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
+                #_______________________________________Gestion du filtre arrière plan cabane_______________________________________                    
+                if bool_activate_filtre_oiseau_animee:  
+                    if animation_files_bird and alpha_animation_files:
+                        animation_frame_bird = cv2.imread(os.path.join(animation_folder_bird, animation_files_bird[compteur_image_animation]))
+                        alpha_animation_frame = cv2.imread(os.path.join(alpha_animation_folder, alpha_animation_files[compteur_image_animation]))
+                        # Vous pouvez ajuster la position, la taille, etc.
+                        animation_frame_resize_bird = cv2.resize(animation_frame_bird, (frame.shape[1], frame.shape[0]))
+                        alpha_animation_frame_resize = cv2.resize(alpha_animation_frame, (frame.shape[1], frame.shape[0]))
+                        # Convertir l'image alpha en niveaux de gris
+                        gray_alpha_animation_frame_resize = cv2.cvtColor(alpha_animation_frame_resize, cv2.COLOR_BGR2GRAY)
+                        # Comparaison des images en niveaux de gris
+                        mask_bird = ((cv2.absdiff(cv2.cvtColor(p1, cv2.COLOR_BGR2GRAY), cv2.cvtColor(capture_d_image_de_fond, cv2.COLOR_BGR2GRAY)) < 20) & (gray_alpha_animation_frame_resize != np.zeros((frame.shape[0], frame.shape[1]), dtype=np.uint8)))
+                        # Incrustation de l'animation basée sur le masque
+                        p1[mask_bird] = animation_frame_resize_bird[mask_bird]                 
                 #________________________________________Gestion du filtre arrière plan océan_______________________________________                    
                 if bool_activate_filtre_ocean:
                     p1 = incrustation_de_fond_statique(ocean, p1)
                 #_______________________________________Gestion du filtre arrière plan cabane_______________________________________                    
                 if bool_activate_filtre_cabane:
-                    p1 = incrustation_de_fond_statique(cabane, p1)
+                    p1 = incrustation_de_fond_statique(cabane, p1)  
+                compteur_image_animation = (compteur_image_animation + 1)% len(animation_files)
         #_________________________________________________Gestion du filtre saturation___________________________________________
         if bool_activate_filtre_saturation:
             hsv_image = cv2.cvtColor(p1, cv2.COLOR_BGR2HSV)
