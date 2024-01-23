@@ -1,12 +1,13 @@
-TD7 Projet - Note d’intention 
-
-Nous avons mis en place un système de filtre sur vidéo webcam en direct. Pour la fenêtre et la 
-gestion des Menu, nous avons utilisé l’interface graphique Tkinter. On peut désactiver ou (ré)activer
-les filtres dans le Menu nommé « Choix des filtres ».
+#  Note d’intention 
+Nous avons mis en place un système de filtre sur vidéo webcam en direct. 
+Pour la fenêtre et la gestion des Menu, nous avons utilisé l’interface graphique Tkinter. 
+On peut désactiver ou (ré)activer les filtres dans le Menu nommé « Choix des filtres ».
 
 Le thème est « une femme des années 70 en vacances ».
 
-Utilisation
+#  Utilisation
+
+Ouvrez le fichier : 
 
 Placez la webcam sur une surface stable en face d’un fond blanc de préférence. Nous avons fait le 
 choix de prendre le premier frame de la vidéo webcam comme fond de référence. Ainsi, lorsque vous 
