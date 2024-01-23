@@ -7,7 +7,7 @@ Le thème est « une femme des années 70 en vacances ».
 
 #  Utilisation
 
-Ouvrez puis lancer le fichier : VIVIER_RANDRIAMITANDRINA_Projet/VIVIER_RANDRIAMITANDRINA_Code_Projet.py
+Ouvrez puis lancez le fichier : VIVIER_RANDRIAMITANDRINA_Projet/VIVIER_RANDRIAMITANDRINA_Code_Projet.py
 
 Placez la webcam sur une surface stable en face d’un fond blanc de préférence. Nous avons fait le 
 choix de prendre le premier frame de la vidéo webcam comme fond de référence. Ainsi, lorsque vous 
